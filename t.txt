@@ -1,0 +1,1 @@
+{'Money': 775.69, 'User': 't', 'Password': '$pbkdf2-sha256$29000$V4pR6r3X2ts7J6Q0Rug9Bw$W9UAvxAkKH8ryvIejfE6WV0fWS/2cauoMjfAKHVbLdg', 'AAPL': {'shares': 1, 'price': 145.22}, 'BA': {'price': 128.79, 'shares': 1}}
