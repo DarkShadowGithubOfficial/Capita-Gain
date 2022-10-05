@@ -1,0 +1,1 @@
+{'Money': 731.76, 'User': 'JustinGug', 'Password': '$pbkdf2-sha256$29000$zRmDECIk5HwvZSzFeO89hw$9SGszKwSNL1ZdgkWn8.D29Cscud883B2XIAZ0TjyK7w', 'TSLA': {'price': 266.9055, 'shares': 1}}
