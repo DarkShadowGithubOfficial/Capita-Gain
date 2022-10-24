@@ -1,10 +1,13 @@
 import requests as req
 from tkinter import *
 import json
+from tkhtmlview import HTMLLabel
 import os
 import ast
 from passlib.hash import pbkdf2_sha256
 from datetime import date
+from datetime import timedelta
+import webbrowser
 class Table:
   def __init__(self,root,rows,columns,lst):
     for i in range(rows):
@@ -21,7 +24,7 @@ def main(username):
     Button(root, text = "Forum", command=lambda :forum(username), background = 'green', width = 30, height = 2).pack()
     def profile():
       root1 = Tk()
-      root1.title(stats['User']+"'s Profile'")
+      root1.title(stats['User']+"'s Profile")
       root1.configure(background = 'white')
       Label(root1, text="Username:"+stats['User'],font=('arial bold', 30), bg = 'white').pack()
       Label(root1, text='Money: $' + str(stats['Money']),font=('arial bold',20), bg = 'white').pack()
@@ -107,6 +110,14 @@ def get_stocks(username):
         fg = 'green'
     elif percent == 0:
         fg = 'gray'
+    yester = date.today() - timedelta(days = 1)
+    news_inf = req.get('https://finnhub.io/api/v1/company-news?symbol={ticker}&from={yesterday}&to={today}&token=cc36ju2ad3i96jb01qg0'.format(ticker = name, yesterday = yester, today = date.today())).json()
+    news_info = {}
+    if len(news_inf) > 0:
+      news_info = news_inf[0]
+      news_info['source'] = "Latest news from " + news_info['source']
+    else:
+      news_info = {"source": "", "summary": '', "url": ""}
     thislist = [
       ("Title", name),
       ("Company Size", vol),
@@ -151,7 +162,7 @@ def get_stocks(username):
             f.write(str(stats))
             f.close()
             
-          Button(root1, text = "Sell shares", command = sell, bg = 'white').pack()
+          Button(root1, text = "Sell shares", command = sell, bg = 'forestgreen').pack()
           
       share_amount = Text(root1, height = 5)
       share_amount.pack()
@@ -167,7 +178,8 @@ def get_stocks(username):
               purchase=Tk()
               purchase.geometry('300x300')
               purchase.title('Confirmation')
-              Label(purchase,text="You have purchased " + str(shares) + " share(s).", font=('Arial',12)).pack()
+              purchase.configure(bg='Green')
+              Label(purchase,text="You have purchased " + str(shares) + " share(s).", font=('Arial',12),bg='green').pack()
               stats[name] = {'shares': shares + stats[name]['shares'], 'price': price}
               root1.destroy()
               f = open(username + '.txt', 'w')
@@ -178,7 +190,7 @@ def get_stocks(username):
               alert.geometry('200x200')
               alert.title('Alert')
               Label(alert, text = "You can't afford this.", font = ('arial bold', 12 ), underline = True, background='white', fg = 'red').pack()            
-      Button(root1, command = buy_shares, text = "Buy shares", bg = 'white').pack()
+      Button(root1, command = buy_shares, text = "Buy shares", bg = 'salmon').pack()
       if price > 500:
           Label(root1, text = "Definitely consider investing because the earnings you would get is phenomenal!", bg = 'white').pack()
       elif price > 100:
@@ -196,12 +208,17 @@ def get_stocks(username):
           shares = int(shares)
           cost = shares * price
           if cost <= stats["Money"]:
-              Tel
               stats["Money"] -= cost
               stats["Money"] *= 100
               stats["Money"] = round(stats["Money"])
               stats["Money"] /= 100
               stats[name] = {'price': price, 'shares': shares}
+              x = alert.winfo_screenwidth()/2 - 50
+              y = alert.winfo_screenheight()/2 - 50
+              alert.geometry('%dx%d+%d+%d' % (100, 100, x, y))
+              alert.title("Message")
+              alert.configure(background = 'red')
+              Label(alert, text = "You bought "+str(shares)+" share(s).", bg = 'red').pack()
               root1.destroy()
               f = open(username + '.txt', 'w')
               f.write(str(stats))
@@ -214,17 +231,21 @@ def get_stocks(username):
             alert.title("Message")
             alert.configure(background = 'red')
             Label(alert, text = "You don't have enough money to buy this!", bg = 'red').pack()
-      Button(root1, command = buy_shares, text = "Buy shares", bg = 'white').pack()
+      Button(root1, command = buy_shares, text = "Buy shares", bg = 'salmon').pack()
       if price > 500:
-          Label(root1, text = "Definitely consider investing because the earnings you would get is phenomenal!", bg = 'white').pack()
+          Label(root1, text = "Tip: Definitely consider investing because the earnings you would get is phenomenal!", bg = 'white').pack()
       elif price > 100:
           if percent > 1:
-            Label(root1, text = "You may want to consider investing, because the earnings are decent and the stock may go up much more soon.", bg = 'white').pack()
+            Label(root1, text = "Tip: You may want to consider investing, because the earnings are decent and the stock may go up much more soon.", bg = 'white').pack()
           elif percent < 1:
-            Label(root1, text = "Think about how much people would need this product depending on the time, because this stock may fall and cause turmoil in your credit card.", bg = 'white').pack()
+            Label(root1, text = "Tip: Think about how much people would need this product depending on the time, because this stock may fall and cause turmoil in your credit card.", bg = 'white').pack()
       else:
-          Label(root1, text = "You may not want to invest in this stock because it stands quite low now, and you may want to invest in it later, if it grows.", bg = 'white')
-
+          Label(root1, text = "Tip: You may not want to invest in this stock because it stands quite low now, and you may want to invest in it later, if it grows.", bg = 'white')
+    Label(root1, bg='white', text = news_info['source'],font = ('arial bold',12)).pack()
+    Label(root1, bg='white', text = news_info['summary']).pack()
+    def goto():
+      webbrowser.open_new(news_info['url'])
+    link = Button(root1, text = news_info['url'], fg='dodgerblue', command=goto, wraplength=500, bg = 'white').pack()
 loginAttempts=5
 openacc=input("Welcome to Capita Gain! This project was made by Anakin Dasgupta and Rian Chadha.\nDo you have an account? (Y or N) ")
 if openacc.lower()=='y':
